@@ -14,6 +14,7 @@ import android.widget.Toast;
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
     private final String TAG = "RegisterActivity";
 
+    UserLocalStore userLocalStore;
     private Button bRegister;
     private EditText etName, etUsername, etPassword, etPasswordRepeat;
     private TextView tvLoginLink, tvWarnName, tvWarnUsername, tvWarnPassword, tvWarnPassRepeat;
@@ -36,6 +37,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
         bRegister.setOnClickListener(this);
         tvLoginLink.setOnClickListener(this);
+
+        userLocalStore = new UserLocalStore(this);
     }
 
     @Override
@@ -51,9 +54,16 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
+    // TODO: Added new user to database in the server
     private void processRegister() {
         if (validateData()) {
+            User registeredUser = new User(etName.getText().toString(), etUsername.getText().toString(), etPassword.getText().toString());
+            userLocalStore.storeUserData(registeredUser);
+            userLocalStore.setUserLoggedIn(true);
+
             Log.d(TAG, etName.getText().toString() + " " + etUsername.getText().toString() + " " + etPassword.getText().toString());
+
+            startActivity(new Intent(this, MainActivity.class));
         }
     }
 

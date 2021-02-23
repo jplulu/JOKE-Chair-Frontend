@@ -15,6 +15,7 @@ import android.widget.Toast;
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private final String TAG = "LoginActivity";
 
+    private UserLocalStore userLocalStore;
     private Button bLogin;
     private EditText etUsername, etPassword;
     private TextView tvRegisterLink, tvWarnUsername, tvWarnPassword;
@@ -33,6 +34,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         bLogin.setOnClickListener(this);
         tvRegisterLink.setOnClickListener(this);
+
+        userLocalStore = new UserLocalStore(this);
     }
 
     @Override
@@ -48,9 +51,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    // TODO: Add authentication with server and retrieve user data
     private void processLogin() {
         if (validateData()) {
+            User user = new User(null, null, null);
+            userLocalStore.storeUserData(user);
+            userLocalStore.setUserLoggedIn(true);
+
             Log.d(TAG, etUsername.getText().toString() + " " + etPassword.getText().toString());
+
+            startActivity(new Intent(this, MainActivity.class));
         }
     }
 
