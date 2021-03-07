@@ -1,6 +1,5 @@
 package com.example.jokechair;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +16,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -29,50 +29,82 @@ public class PostureActivity extends AppCompatActivity {
     private static final String TAG = "PostureActivity";
     private static final UUID MY_UUID = UUID.fromString("0001101-0000-1000-8000-00805F9B34FB");
     private static final String TARGET_DEVICE_NAME = "placeholder";
+    private static final int REQUEST_ENABLE_BT = 1;
 
-    Button bStart;
+    static final int STATE_LISTENING = 1;
+    static final int STATE_CONNECTING = 2;
+    static final int STATE_CONNECTED = 3;
+    static final int STATE_CONNECTION_FAILED = 4;
+    static final int STATE_MESSAGE_RECEIVE = 5;
+
+    static boolean BLUETOOTH_AVAILABLE = true;
+
+    TextView tvPostureStatusMessage;
+    Button bStart, bHome;
 
     BluetoothAdapter bluetoothAdapter;
     String targetDeviceAddress;
 
     ConnectedThread connectedThread;
 
-    private static final int REQUEST_ENABLE_BT = 1;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_posture);
 
+        tvPostureStatusMessage = (TextView) findViewById(R.id.tvPostureStatusMessage);
         bStart = (Button) findViewById(R.id.bStart);
+        bHome = (Button) findViewById(R.id.bHome);
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         targetDeviceAddress = null;
 
+        bStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (BLUETOOTH_AVAILABLE) {
+                    findDevice();
+                    if (targetDeviceAddress != null) {
+                        Message message = Message.obtain();
+                        message.what = STATE_CONNECTING;
+                        btHandler.sendMessage(message);
+
+                        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(targetDeviceAddress);
+                        connect(device);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Could not find device to connect to", Toast.LENGTH_LONG).show();
+                        Message message = Message.obtain();
+                        message.what = STATE_CONNECTION_FAILED;
+                        btHandler.sendMessage(message);
+                    }
+                }
+            }
+        });
+
+        bHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }
+        });
+
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(btScanReceiver, filter);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
         if(bluetoothAdapter == null) {
             Toast.makeText(getApplicationContext(), "Bluetooth is not supported on this device", Toast.LENGTH_LONG).show();
+            BLUETOOTH_AVAILABLE = false;
         } else {
             if(!bluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
         }
-
-        bStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                findDevice();
-                if (targetDeviceAddress != null) {
-                    BluetoothDevice device = bluetoothAdapter.getRemoteDevice(targetDeviceAddress);
-                    connect(device);
-                } else {
-                    Toast.makeText(getApplicationContext(), "Could not find device to connect to", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(btScanReceiver, filter);
     }
 
     private final BroadcastReceiver btScanReceiver = new BroadcastReceiver() {
@@ -94,12 +126,17 @@ public class PostureActivity extends AppCompatActivity {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == RESULT_CANCELED) {
                 Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_LONG).show();
+                BLUETOOTH_AVAILABLE = false;
             }
         }
     }
 
     private void findDevice() {
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+
+        Message message = Message.obtain();
+        message.what = STATE_LISTENING;
+        btHandler.sendMessage(message);
 
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
@@ -135,6 +172,24 @@ public class PostureActivity extends AppCompatActivity {
     private final Handler btHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case STATE_LISTENING:
+                    tvPostureStatusMessage.setText("Listening for device");
+                    break;
+                case STATE_CONNECTING:
+                    tvPostureStatusMessage.setText("Connecting to device");
+                    break;
+                case STATE_CONNECTED:
+                    tvPostureStatusMessage.setText("Device connected");
+                    break;
+                case STATE_CONNECTION_FAILED:
+                    tvPostureStatusMessage.setText("Connection Failed");
+                    break;
+                case STATE_MESSAGE_RECEIVE:
+                    tvPostureStatusMessage.setText("Receiving message");
+                    break;
+            }
+
             return true;
         }
     });
@@ -158,7 +213,15 @@ public class PostureActivity extends AppCompatActivity {
         public void run() {
             try {
                 btSocket.connect();
+
+                Message message = Message.obtain();
+                message.what = STATE_CONNECTED;
+                btHandler.sendMessage(message);
             } catch (IOException connectException) {
+                Message message = Message.obtain();
+                message.what = STATE_CONNECTION_FAILED;
+                btHandler.sendMessage(message);
+
                 try {
                     btSocket.close();
                 } catch (IOException closeException) {
@@ -207,6 +270,7 @@ public class PostureActivity extends AppCompatActivity {
                     numBytes = btInputStream.read(btBuffer);
 
                     // TODO: Process received bytes in message handler
+                    btHandler.obtainMessage(STATE_MESSAGE_RECEIVE, numBytes, -1, btBuffer).sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "Input stream was disconnected", e);
                     break;
