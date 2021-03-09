@@ -37,8 +37,6 @@ public class PostureActivity extends AppCompatActivity {
     static final int STATE_CONNECTION_FAILED = 4;
     static final int STATE_MESSAGE_RECEIVE = 5;
 
-    static boolean BLUETOOTH_AVAILABLE = true;
-
     TextView tvPostureStatusMessage;
     Button bStart, bHome;
 
@@ -62,7 +60,7 @@ public class PostureActivity extends AppCompatActivity {
         bStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (BLUETOOTH_AVAILABLE) {
+                if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
                     findDevice();
                     if (targetDeviceAddress != null) {
                         Message message = Message.obtain();
@@ -77,6 +75,8 @@ public class PostureActivity extends AppCompatActivity {
                         message.what = STATE_CONNECTION_FAILED;
                         btHandler.sendMessage(message);
                     }
+                } else {
+                    Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -98,7 +98,6 @@ public class PostureActivity extends AppCompatActivity {
 
         if(bluetoothAdapter == null) {
             Toast.makeText(getApplicationContext(), "Bluetooth is not supported on this device", Toast.LENGTH_LONG).show();
-            BLUETOOTH_AVAILABLE = false;
         } else {
             if(!bluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -126,7 +125,6 @@ public class PostureActivity extends AppCompatActivity {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == RESULT_CANCELED) {
                 Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_LONG).show();
-                BLUETOOTH_AVAILABLE = false;
             }
         }
     }
@@ -186,7 +184,10 @@ public class PostureActivity extends AppCompatActivity {
                     tvPostureStatusMessage.setText("Connection Failed");
                     break;
                 case STATE_MESSAGE_RECEIVE:
-                    tvPostureStatusMessage.setText("Receiving message");
+                    tvPostureStatusMessage.setText("Receiving data");
+                    byte[] readBuff = (byte[]) msg.obj;
+                    String readings = new String(readBuff, 0, msg.arg1);
+                    Log.d(TAG, readings);
                     break;
             }
 
@@ -274,6 +275,11 @@ public class PostureActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     Log.e(TAG, "Input stream was disconnected", e);
                     break;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
