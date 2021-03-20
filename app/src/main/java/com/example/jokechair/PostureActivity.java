@@ -3,6 +3,7 @@ package com.example.jokechair;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -16,6 +17,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,9 +73,10 @@ public class PostureActivity extends AppCompatActivity {
                         connect(device);
                     } else {
                         Toast.makeText(getApplicationContext(), "Could not find device to connect to", Toast.LENGTH_LONG).show();
-                        Message message = Message.obtain();
-                        message.what = STATE_CONNECTION_FAILED;
-                        btHandler.sendMessage(message);
+//                        Message message = Message.obtain();
+//                        message.what = STATE_CONNECTION_FAILED;
+//                        btHandler.sendMessage(message);
+                        tvPostureStatusMessage.setText("Connection Failed");
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
@@ -106,12 +109,21 @@ public class PostureActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(btScanReceiver);
+        super.onDestroy();
+    }
+
     private final BroadcastReceiver btScanReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action))
+                Log.d(TAG, "Starting discovery");
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.d(TAG, "Found: " + device.getName());
                 if (TARGET_DEVICE_NAME.equals(device.getName())) {
                     targetDeviceAddress = device.getAddress();
                 }
@@ -132,32 +144,34 @@ public class PostureActivity extends AppCompatActivity {
     private void findDevice() {
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
-        Message message = Message.obtain();
-        message.what = STATE_LISTENING;
-        btHandler.sendMessage(message);
+//        Message message = Message.obtain();
+//        message.what = STATE_LISTENING;
+//        btHandler.sendMessage(message);
+        this.tvPostureStatusMessage.setText("Listening for device");
 
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 if (TARGET_DEVICE_NAME.equals(device.getName())) {
-                    targetDeviceAddress = device.getAddress();
+                    this.targetDeviceAddress = device.getAddress();
                     break;
                 }
             }
-        } else {
-            bluetoothAdapter.startDiscovery();
+        }
+        if (targetDeviceAddress == null) {
+            this.bluetoothAdapter.startDiscovery();
             int counter = 0;
-            while(counter < 60) {
-                if (targetDeviceAddress != null) {
+            while(this.targetDeviceAddress == null) {
+                if (this.targetDeviceAddress != null) {
                     break;
                 }
                 counter++;
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
             }
-            bluetoothAdapter.cancelDiscovery();
+            this.bluetoothAdapter.cancelDiscovery();
         }
     }
 
