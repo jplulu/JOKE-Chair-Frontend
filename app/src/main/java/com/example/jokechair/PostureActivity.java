@@ -60,7 +60,7 @@ public class PostureActivity extends AppCompatActivity {
         bStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
+                if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
                     findDevice();
                     if (targetDeviceAddress != null) {
                         Message message = Message.obtain();
