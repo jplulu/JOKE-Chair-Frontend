@@ -30,7 +30,7 @@ public class PostureActivity extends AppCompatActivity {
 
     private static final String TAG = "PostureActivity";
     private static final UUID MY_UUID = UUID.fromString("0001101-0000-1000-8000-00805F9B34FB");
-    private static final String TARGET_DEVICE_NAME = "placeholder";
+    private static final String TARGET_DEVICE_NAME = "ESP32test";
     private static final int REQUEST_ENABLE_BT = 1;
 
     static final int STATE_LISTENING = 1;
@@ -210,8 +210,8 @@ public class PostureActivity extends AppCompatActivity {
                     byte[] readBuff = (byte[]) msg.obj;
                     int[] sensorVals = new int[8];
                     for(int i = 0; i < 8; i++){
-                        int[i] = readBuff[2*i] + readBuff[2*i+1]*256;
-                        System.out.println(String.valueOf(i) + "th number: " + String.valueOf(int[i]));
+                        sensorVals[i] = (readBuff[2*i]&0xFF) + (readBuff[2*i+1]&0xFF)*256;
+                        System.out.println(String.valueOf(i) + "th number: " + String.valueOf(sensorVals[i]));
                     }
                     //String readings = new String(readBuff, 0, msg.arg1);
                     //Log.d(TAG, readings);
@@ -296,7 +296,7 @@ public class PostureActivity extends AppCompatActivity {
             while (true) {
                 try {
                     numBytes = btInputStream.read(btBuffer);
-
+                    System.out.println(numBytes);
                     // TODO: Process received bytes in message handler
                     btHandler.obtainMessage(STATE_MESSAGE_RECEIVE, numBytes, -1, btBuffer).sendToTarget();
                 } catch (IOException e) {
