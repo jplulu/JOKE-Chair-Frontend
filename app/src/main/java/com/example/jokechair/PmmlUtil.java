@@ -1,39 +1,43 @@
 package com.example.jokechair;
 
+import android.util.Log;
+
 import org.dmg.pmml.FieldName;
+import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.Computable;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.FieldValue;
 import org.jpmml.evaluator.InputField;
-import org.jpmml.evaluator.LoadingModelEvaluatorBuilder;
+import org.jpmml.evaluator.ModelEvaluatorBuilder;
 import org.jpmml.evaluator.TargetField;
-import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
 
-public class PmmlStuff {
-    public void evaluate() throws IOException, SAXException, JAXBException {
-        Evaluator evaluator = new LoadingModelEvaluatorBuilder()
-                .load(new File("logistic_regression.pmml"))
-                .build();
+public class PmmlUtil {
+    private static final String TAG = "PmmlUtil";
+
+    public Evaluator createEvaluator(InputStream is) throws IOException {
+        PMML pmml = org.jpmml.model.jackson.JacksonUtil.readPMML(is);
+        ModelEvaluatorBuilder modelEvaluatorBuilder = new ModelEvaluatorBuilder(pmml);
+        Evaluator evaluator = modelEvaluatorBuilder.build();
         evaluator.verify();
+        Log.d(TAG, "Evaluator created");
 
+        return evaluator;
+    }
+
+    public void testEvaluator(Evaluator evaluator) {
         List<? extends InputField> inputFields = evaluator.getInputFields();
-        System.out.println(inputFields);
 
         List<? extends TargetField> targetFields = evaluator.getTargetFields();
-        System.out.println(targetFields);
 
         double[] inputRecord = {527,541,497,526,83,164,327,273};
         normalizeInput(inputRecord);
-        System.out.println(Arrays.toString(inputRecord));
 
         Map<FieldName, FieldValue> arguments = new LinkedHashMap<>();
 
@@ -50,10 +54,10 @@ public class PmmlStuff {
         Object targetValue = results.get(targetFields.get(0).getName());
         Computable computable = (Computable) targetValue;
         targetValue = computable.getResult();
-        System.out.println("Result: " + targetValue);
+        Log.d(TAG, "Result: " + targetValue);
     }
 
-    private void normalizeInput(double[] inputRecord) {
+    public static void normalizeInput(double[] inputRecord) {
         double sum = 0.0, std = 0.0;
         for (double num : inputRecord) {
             sum += num;
@@ -68,4 +72,5 @@ public class PmmlStuff {
             inputRecord[i] = (inputRecord[i] - mean) / std;
         }
     }
+
 }

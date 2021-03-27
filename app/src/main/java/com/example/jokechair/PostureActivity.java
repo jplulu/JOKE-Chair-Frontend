@@ -142,6 +142,7 @@ public class PostureActivity extends AppCompatActivity {
     }
 
     private void findDevice() {
+        Log.d(TAG, "Finding device");
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
 //        Message message = Message.obtain();
@@ -158,9 +159,16 @@ public class PostureActivity extends AppCompatActivity {
             }
         }
         if (targetDeviceAddress == null) {
+            if (this.bluetoothAdapter.isDiscovering()) {
+                // cancel the discovery if it has already started
+                this.bluetoothAdapter.cancelDiscovery();
+            }
             this.bluetoothAdapter.startDiscovery();
             int counter = 0;
             while(this.targetDeviceAddress == null) {
+                if (!this.bluetoothAdapter.isDiscovering()) {
+                    break;
+                }
                 if (this.targetDeviceAddress != null) {
                     break;
                 }
