@@ -208,8 +208,13 @@ public class PostureActivity extends AppCompatActivity {
                 case STATE_MESSAGE_RECEIVE:
                     tvPostureStatusMessage.setText("Receiving data");
                     byte[] readBuff = (byte[]) msg.obj;
-                    String readings = new String(readBuff, 0, msg.arg1);
-                    Log.d(TAG, readings);
+                    int[] sensorVals = new int[8];
+                    for(int i = 0; i < 8; i++){
+                        int[i] = readBuff[2*i] + readBuff[2*i+1]*256;
+                        System.out.println(String.valueOf(i) + "th number: " + String.valueOf(int[i]));
+                    }
+                    //String readings = new String(readBuff, 0, msg.arg1);
+                    //Log.d(TAG, readings);
                     break;
             }
 
