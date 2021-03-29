@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         User loggedInUser = userLocalStore.getLoggedInUser();
         if (loggedInUser != null) {
-            Toast.makeText(this, "Logged in as " + loggedInUser.getName(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Logged in as " + loggedInUser.getEmail(), Toast.LENGTH_LONG).show();
         } else {
             startActivity(new Intent(this, LoginActivity.class));
         }

@@ -1,35 +1,37 @@
 package com.example.jokechair;
 
 public class User {
-    private String name, username, password;
+    private String email, password;
+    private int uid;
 
-    public User(String name, String username, String password) {
-        this.name = name;
-        this.username = username;
+    public User(String email, String password, int uid) {
+        this.email = email;
         this.password = password;
+        this.uid = uid;
     }
 
-    public String getName() {
-        return name;
+    public String getEmail() {
+        return email;
     }
 
-    public String getUsername() {
-        return username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public int getUid() {
+        return uid;
+    }
+
+    public void setUid(int uid) {
+        this.uid = uid;
+    }
 }
+
