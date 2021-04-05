@@ -40,6 +40,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Set;
 import java.util.UUID;
 
@@ -63,6 +64,8 @@ public class PostureActivity extends AppCompatActivity {
     String targetDeviceAddress;
 
     ConnectedThread connectedThread;
+
+    PmmlUtil pmmlUtil = new PmmlUtil();
 
     private RequestQueue mQueue;
 
@@ -134,59 +137,37 @@ public class PostureActivity extends AppCompatActivity {
                 1,
                 false);
 
-        InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.POST, url,
-                new Response.Listener<byte[]>() {
+        mQueue = Volley.newRequestQueue(getApplicationContext());
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, null,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(byte[] response) {
-                        // TODO handle the response
-                        try {
-                            if (response!=null) {
-                                FileOutputStream outputStream;
-                                String name= "usermodel.pmml";
+                    public void onResponse(JSONObject response) {
+                        pmmlUtil.createModelFile(getApplicationContext(), "predictmodel.pmml", response.toString());
+                        System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), "predictmodel.pmml"));
 
-
-                                File f = getFileStreamPath(name);
-                                f = getFileStreamPath(name);
-                                //Debug lines
-//                                System.out.println(f.length());
-//
-//                                BufferedReader br = new BufferedReader(new FileReader(f));
-//                                String line;
-//                                while ((line = br.readLine()) != null) {
-//                                    System.out.println(line);
-//                                }
-//                                br.close();
-//                                f.delete();
-//                                f = getFileStreamPath(name);
-//                                System.out.println(f.length());
-
-                                outputStream = openFileOutput(name, Context.MODE_PRIVATE);
-                                //Use to get file
-                                outputStream.write(response);
-                                outputStream.close();
-
-                                f = getFileStreamPath(name);
-                                System.out.println(f.length());
-
-
-                                Toast.makeText(getApplicationContext(), "Download complete.", Toast.LENGTH_LONG).show();
+                        InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), "predictmodel.pmml");
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                        while(true) {
+                            try {
+                                if (!reader.ready()) break;
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
-                            Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
-                            e.printStackTrace();
+                            try {
+                                System.out.println(reader.readLine());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                } ,new Response.ErrorListener() {
-
+                }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                // TODO handle the error
+//                    System.out.println("error");
                 error.printStackTrace();
             }
-        }, null);
-        RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext(), new HurlStack());
-        mRequestQueue.add(request);
+        });
+        mQueue.add(request);
     }
 
     @Override

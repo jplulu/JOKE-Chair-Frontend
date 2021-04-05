@@ -26,6 +26,7 @@ public class PmmlUtil {
 
     public void createModelFile(Context context, String fileName, String jsonString) {
         try {
+            System.out.println("HERE");
             FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
             if (jsonString != null) {
                 fos.write(jsonString.getBytes());
