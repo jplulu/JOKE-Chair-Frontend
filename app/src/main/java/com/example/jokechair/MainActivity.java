@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
 
     private UserLocalStore userLocalStore;
-    private Button bLogout, bPosturePage;
+    private Button bLogout, bPosturePage, bCalibrationPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,10 +23,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         bPosturePage = (Button) findViewById(R.id.bPosturePage);
+        bCalibrationPage = (Button) findViewById(R.id.bCalibrationPage);
         bLogout = (Button) findViewById(R.id.bLogout);
 
         bLogout.setOnClickListener(this);
         bPosturePage.setOnClickListener(this);
+        bCalibrationPage.setOnClickListener(this);
 
         userLocalStore = new UserLocalStore(this);
     }
@@ -53,8 +55,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.bPosturePage:
-                Log.e(TAG, "PRESSED POSTURE");
                 startActivity(new Intent(this, PostureActivity.class));
+                break;
+
+            case R.id.bCalibrationPage:
+                startActivity(new Intent(this, CalibrationActivity.class));
                 break;
         }
     }

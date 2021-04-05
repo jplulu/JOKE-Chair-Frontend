@@ -1,5 +1,6 @@
 package com.example.jokechair;
 
+import android.content.Context;
 import android.util.Log;
 
 import org.dmg.pmml.FieldName;
@@ -11,18 +12,47 @@ import org.jpmml.evaluator.InputField;
 import org.jpmml.evaluator.ModelEvaluatorBuilder;
 import org.jpmml.evaluator.TargetField;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class PmmlUtil {
     private static final String TAG = "PmmlUtil";
 
+    public void createModelFile(Context context, String fileName, String jsonString) {
+        try {
+            FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
+            if (jsonString != null) {
+                fos.write(jsonString.getBytes());
+            }
+        } catch (IOException e) {
+            Log.e(TAG, String.valueOf(e));
+        }
+    }
+
+    public InputStream readModelFile(Context context, String fileName) {
+        try {
+            return context.openFileInput(fileName);
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, String.valueOf(e));
+            return null;
+        }
+    }
+
+    public boolean isModelPresent(Context context, String fileName) {
+        String path = context.getFilesDir().getAbsolutePath() + "/" + fileName;
+        File file = new File(path);
+        return file.exists();
+    }
+
     public Evaluator createEvaluator(InputStream is) throws IOException {
         PMML pmml = org.jpmml.model.jackson.JacksonUtil.readPMML(is);
+        //PMML pmml = org.jpmml.model.PMMLUtil.unmarshal(is);
         ModelEvaluatorBuilder modelEvaluatorBuilder = new ModelEvaluatorBuilder(pmml);
         Evaluator evaluator = modelEvaluatorBuilder.build();
         evaluator.verify();
@@ -31,12 +61,11 @@ public class PmmlUtil {
         return evaluator;
     }
 
-    public void testEvaluator(Evaluator evaluator) {
+    public void testEvaluator(Evaluator evaluator, double[] inputRecord) {
         List<? extends InputField> inputFields = evaluator.getInputFields();
 
         List<? extends TargetField> targetFields = evaluator.getTargetFields();
 
-        double[] inputRecord = {527,541,497,526,83,164,327,273};
         normalizeInput(inputRecord);
 
         Map<FieldName, FieldValue> arguments = new LinkedHashMap<>();
