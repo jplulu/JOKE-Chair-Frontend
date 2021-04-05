@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -21,6 +22,22 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
@@ -46,6 +63,8 @@ public class PostureActivity extends AppCompatActivity {
     String targetDeviceAddress;
 
     ConnectedThread connectedThread;
+
+    private RequestQueue mQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +126,67 @@ public class PostureActivity extends AppCompatActivity {
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
         }
+
+        mQueue = Volley.newRequestQueue(getApplicationContext());
+
+        //TODO use stored UID
+        String url = String.format("http://10.0.2.2:5000/usermodel/generate?uid=%s&gen=%s",
+                1,
+                false);
+
+        InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.POST, url,
+                new Response.Listener<byte[]>() {
+                    @Override
+                    public void onResponse(byte[] response) {
+                        // TODO handle the response
+                        try {
+                            if (response!=null) {
+                                FileOutputStream outputStream;
+                                String name= "usermodel.pmml";
+
+
+                                File f = getFileStreamPath(name);
+                                f = getFileStreamPath(name);
+                                //Debug lines
+//                                System.out.println(f.length());
+//
+//                                BufferedReader br = new BufferedReader(new FileReader(f));
+//                                String line;
+//                                while ((line = br.readLine()) != null) {
+//                                    System.out.println(line);
+//                                }
+//                                br.close();
+//                                f.delete();
+//                                f = getFileStreamPath(name);
+//                                System.out.println(f.length());
+
+                                outputStream = openFileOutput(name, Context.MODE_PRIVATE);
+                                //Use to get file
+                                outputStream.write(response);
+                                outputStream.close();
+
+                                f = getFileStreamPath(name);
+                                System.out.println(f.length());
+
+
+                                Toast.makeText(getApplicationContext(), "Download complete.", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
+                            e.printStackTrace();
+                        }
+                    }
+                } ,new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // TODO handle the error
+                error.printStackTrace();
+            }
+        }, null);
+        RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext(), new HurlStack());
+        mRequestQueue.add(request);
     }
 
     @Override
