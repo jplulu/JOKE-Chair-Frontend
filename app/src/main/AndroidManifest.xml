@@ -15,6 +15,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.JokeChair">
+        <activity android:name=".CalibrationActivity"></activity>
         <activity android:name=".PostureActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".LoginActivity" />
