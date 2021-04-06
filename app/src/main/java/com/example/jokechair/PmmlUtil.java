@@ -61,7 +61,7 @@ public class PmmlUtil {
         return evaluator;
     }
 
-    public void testEvaluator(Evaluator evaluator, double[] inputRecord) {
+    public int predict(Evaluator evaluator, int[] inputRecord) {
         List<? extends InputField> inputFields = evaluator.getInputFields();
 
         List<? extends TargetField> targetFields = evaluator.getTargetFields();
@@ -83,22 +83,23 @@ public class PmmlUtil {
         Object targetValue = results.get(targetFields.get(0).getName());
         Computable computable = (Computable) targetValue;
         targetValue = computable.getResult();
-        Log.d(TAG, "Result: " + targetValue);
+        return (int) targetValue;
     }
 
-    public static void normalizeInput(double[] inputRecord) {
-        double sum = 0.0, std = 0.0;
-        for (double num : inputRecord) {
+    public static void normalizeInput(int[] inputRecord) {
+        int sum = 0;
+        double std = 0.0;
+        for (int num : inputRecord) {
             sum += num;
         }
         double mean = sum / inputRecord.length;
-        for(double num : inputRecord) {
+        for(int num : inputRecord) {
             std += Math.pow(num - mean, 2);
         }
         std = Math.sqrt(std / inputRecord.length);
 
         for(int i = 0; i < inputRecord.length; i++) {
-            inputRecord[i] = (inputRecord[i] - mean) / std;
+            inputRecord[i] = (int) ((int) (inputRecord[i] - mean) / std);
         }
     }
 
