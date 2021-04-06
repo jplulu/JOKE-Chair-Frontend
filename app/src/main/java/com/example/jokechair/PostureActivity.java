@@ -57,6 +57,10 @@ public class PostureActivity extends AppCompatActivity {
     static final int STATE_CONNECTION_FAILED = 4;
     static final int STATE_MESSAGE_RECEIVE = 5;
 
+    private PmmlUtil pmmlUtil;
+    private RequestQueue mQueue;
+    private UserLocalStore userLocalStore;
+
     TextView tvPostureStatusMessage;
     Button bStart, bHome;
 
@@ -65,9 +69,8 @@ public class PostureActivity extends AppCompatActivity {
 
     ConnectedThread connectedThread;
 
-    PmmlUtil pmmlUtil = new PmmlUtil();
 
-    private RequestQueue mQueue;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +83,9 @@ public class PostureActivity extends AppCompatActivity {
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         targetDeviceAddress = null;
+
+        pmmlUtil = new PmmlUtil();
+        userLocalStore = new UserLocalStore(this);
 
         bStart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,7 +140,7 @@ public class PostureActivity extends AppCompatActivity {
 
         //TODO use stored UID
         String url = String.format("http://10.0.2.2:5000/usermodel/generate?uid=%s&gen=%s",
-                1,
+                userLocalStore.getLoggedInUser().getUid(),
                 false);
 
         mQueue = Volley.newRequestQueue(getApplicationContext());
@@ -146,19 +152,6 @@ public class PostureActivity extends AppCompatActivity {
                         System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), "predictmodel.pmml"));
 
                         InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), "predictmodel.pmml");
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                        while(true) {
-                            try {
-                                if (!reader.ready()) break;
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            try {
-                                System.out.println(reader.readLine());
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
                     }
                 }, new Response.ErrorListener() {
             @Override
