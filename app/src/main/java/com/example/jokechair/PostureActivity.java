@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Set;
 import java.util.UUID;
+import org.jpmml.evaluator.Evaluator;
 
 public class PostureActivity extends AppCompatActivity {
 
@@ -60,6 +61,7 @@ public class PostureActivity extends AppCompatActivity {
     private PmmlUtil pmmlUtil;
     private RequestQueue mQueue;
     private UserLocalStore userLocalStore;
+    private Evaluator evaluator;
 
     TextView tvPostureStatusMessage;
     Button bStart, bHome;
@@ -148,10 +150,16 @@ public class PostureActivity extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        pmmlUtil.createModelFile(getApplicationContext(), "predictmodel.pmml", response.toString());
-                        System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), "predictmodel.pmml"));
+                        String filename = "predictmodel" + userLocalStore.getLoggedInUser().getUid() + ".json";
+                        pmmlUtil.createModelFile(getApplicationContext(), filename, response.toString());
+                        System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), filename));
+                        InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), filename);
+                        try {
+                            evaluator = pmmlUtil.createEvaluator(inputStream);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                        InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), "predictmodel.pmml");
                     }
                 }, new Response.ErrorListener() {
             @Override
