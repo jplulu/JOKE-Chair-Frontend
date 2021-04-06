@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -21,16 +22,34 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Set;
 import java.util.UUID;
+import org.jpmml.evaluator.Evaluator;
 
 public class PostureActivity extends AppCompatActivity {
 
     private static final String TAG = "PostureActivity";
     private static final UUID MY_UUID = UUID.fromString("0001101-0000-1000-8000-00805F9B34FB");
-    private static final String TARGET_DEVICE_NAME = "placeholder";
+    private static final String TARGET_DEVICE_NAME = "ESP32test";
     private static final int REQUEST_ENABLE_BT = 1;
 
     static final int STATE_LISTENING = 1;
@@ -39,6 +58,11 @@ public class PostureActivity extends AppCompatActivity {
     static final int STATE_CONNECTION_FAILED = 4;
     static final int STATE_MESSAGE_RECEIVE = 5;
 
+    private PmmlUtil pmmlUtil;
+    private RequestQueue mQueue;
+    private UserLocalStore userLocalStore;
+    private Evaluator evaluator;
+
     TextView tvPostureStatusMessage;
     Button bStart, bHome;
 
@@ -46,6 +70,9 @@ public class PostureActivity extends AppCompatActivity {
     String targetDeviceAddress;
 
     ConnectedThread connectedThread;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +85,9 @@ public class PostureActivity extends AppCompatActivity {
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         targetDeviceAddress = null;
+
+        pmmlUtil = new PmmlUtil();
+        userLocalStore = new UserLocalStore(this);
 
         bStart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,6 +137,38 @@ public class PostureActivity extends AppCompatActivity {
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
         }
+
+        mQueue = Volley.newRequestQueue(getApplicationContext());
+
+        //TODO use stored UID
+        String url = String.format("http://10.0.2.2:5000/usermodel/generate?uid=%s&gen=%s",
+                userLocalStore.getLoggedInUser().getUid(),
+                false);
+
+        mQueue = Volley.newRequestQueue(getApplicationContext());
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        String filename = "predictmodel" + userLocalStore.getLoggedInUser().getUid() + ".json";
+                        pmmlUtil.createModelFile(getApplicationContext(), filename, response.toString());
+                        System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), filename));
+                        InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), filename);
+                        try {
+                            evaluator = pmmlUtil.createEvaluator(inputStream);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+//                    System.out.println("error");
+                error.printStackTrace();
+            }
+        });
+        mQueue.add(request);
     }
 
     @Override
@@ -208,8 +270,13 @@ public class PostureActivity extends AppCompatActivity {
                 case STATE_MESSAGE_RECEIVE:
                     tvPostureStatusMessage.setText("Receiving data");
                     byte[] readBuff = (byte[]) msg.obj;
-                    String readings = new String(readBuff, 0, msg.arg1);
-                    Log.d(TAG, readings);
+                    int[] sensorVals = new int[8];
+                    for(int i = 0; i < 8; i++){
+                        sensorVals[i] = (readBuff[2*i]&0xFF) + (readBuff[2*i+1]&0xFF)*256;
+                        System.out.println(String.valueOf(i) + "th number: " + String.valueOf(sensorVals[i]));
+                    }
+                    //String readings = new String(readBuff, 0, msg.arg1);
+                    //Log.d(TAG, readings);
                     break;
             }
 
@@ -291,7 +358,7 @@ public class PostureActivity extends AppCompatActivity {
             while (true) {
                 try {
                     numBytes = btInputStream.read(btBuffer);
-
+                    System.out.println(numBytes);
                     // TODO: Process received bytes in message handler
                     btHandler.obtainMessage(STATE_MESSAGE_RECEIVE, numBytes, -1, btBuffer).sendToTarget();
                 } catch (IOException e) {

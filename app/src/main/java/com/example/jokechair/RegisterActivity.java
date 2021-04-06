@@ -57,7 +57,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     // TODO: Added new user to database in the server
     private void processRegister() {
         if (validateData()) {
-            User registeredUser = new User(etName.getText().toString(), etUsername.getText().toString(), etPassword.getText().toString());
+            User registeredUser = new User(etName.getText().toString(), etPassword.getText().toString(), 0);
             userLocalStore.storeUserData(registeredUser);
             userLocalStore.setUserLoggedIn(true);
 
