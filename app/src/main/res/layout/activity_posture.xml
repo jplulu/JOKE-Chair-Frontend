@@ -4,46 +4,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".PostureActivity">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tvCurrentPosture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="JOKE Chair Home Page"
+        android:text="Posture"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/bPosturePage"
+    <TextView
+        android:id="@+id/tvPostureStatusMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Posture Page"
-        app:layout_constraintBottom_toTopOf="@id/bCalibrationPage"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        android:text="Status Message for Debug"
+        app:layout_constraintBottom_toTopOf="@id/bStart"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvCurrentPosture"
+        android:textColor="#F44336"/>
 
     <Button
-        android:id="@+id/bCalibrationPage"
+        android:id="@+id/bStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Calibration Page"
-        app:layout_constraintBottom_toTopOf="@+id/bLogout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bPosturePage" />
-
-    <Button
-        android:id="@+id/bLogout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Logout"
+        android:text="Start"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/tvCurrentPosture" />
+
+    <Button
+        android:id="@+id/bHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Home Page"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bStart" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
