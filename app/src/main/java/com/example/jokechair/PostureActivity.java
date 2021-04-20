@@ -138,7 +138,7 @@ public class PostureActivity extends AppCompatActivity {
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
         }
-
+        
         mQueue = Volley.newRequestQueue(getApplicationContext());
 
         //TODO use stored UID
@@ -146,8 +146,8 @@ public class PostureActivity extends AppCompatActivity {
                 userLocalStore.getLoggedInUser().getUid(),
                 false);
 
-        String filename = "predictmodel" + userLocalStore.getLoggedInUser().getUid() + ".json";
-        if (pmmlUtil.isModelPresent(getApplicationContext(), filename)) {
+        String fileName = "predictmodel" + userLocalStore.getLoggedInUser().getUid() + ".json";
+        if (!pmmlUtil.isModelPresent(getApplicationContext(), fileName)) {
             mQueue = Volley.newRequestQueue(getApplicationContext());
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, null,
                     new Response.Listener<JSONObject>() {
@@ -161,16 +161,20 @@ public class PostureActivity extends AppCompatActivity {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-
                         }
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-//                    System.out.println("error");
-                    error.printStackTrace();
+                    Log.e(TAG, String.valueOf(error));
                 }
             });
             mQueue.add(request);
+        } else {
+            try {
+                evaluator = pmmlUtil.createEvaluator(pmmlUtil.readModelFile(getApplicationContext(), fileName));
+            } catch (IOException e) {
+                Log.e(TAG, String.valueOf(e));
+            }
         }
     }
 
@@ -253,7 +257,6 @@ public class PostureActivity extends AppCompatActivity {
         connectThread.start();
     }
 
-    // TODO: Create statuses and implement handler
     private final Handler btHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -363,7 +366,6 @@ public class PostureActivity extends AppCompatActivity {
                 try {
                     numBytes = btInputStream.read(btBuffer);
                     System.out.println(numBytes);
-                    // TODO: Process received bytes in message handler
                     btHandler.obtainMessage(STATE_MESSAGE_RECEIVE, numBytes, -1, btBuffer).sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "Input stream was disconnected", e);
