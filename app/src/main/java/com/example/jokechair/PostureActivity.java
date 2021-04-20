@@ -138,7 +138,7 @@ public class PostureActivity extends AppCompatActivity {
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
         }
-
+        
         mQueue = Volley.newRequestQueue(getApplicationContext());
 
         //TODO use stored UID
@@ -250,7 +250,6 @@ public class PostureActivity extends AppCompatActivity {
         connectThread.start();
     }
 
-    // TODO: Create statuses and implement handler
     private final Handler btHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -360,7 +359,6 @@ public class PostureActivity extends AppCompatActivity {
                 try {
                     numBytes = btInputStream.read(btBuffer);
                     System.out.println(numBytes);
-                    // TODO: Process received bytes in message handler
                     btHandler.obtainMessage(STATE_MESSAGE_RECEIVE, numBytes, -1, btBuffer).sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "Input stream was disconnected", e);
