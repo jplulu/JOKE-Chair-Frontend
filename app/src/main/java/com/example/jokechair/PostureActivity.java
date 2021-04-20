@@ -58,12 +58,14 @@ public class PostureActivity extends AppCompatActivity {
     static final int STATE_CONNECTION_FAILED = 4;
     static final int STATE_MESSAGE_RECEIVE = 5;
 
+    private final String[] postures = {"lean forward", "lean left", "lean right", "left leg cross", "proper", "right leg cross", "slouch"};
+
     private PmmlUtil pmmlUtil;
     private RequestQueue mQueue;
     private UserLocalStore userLocalStore;
     private Evaluator evaluator;
 
-    TextView tvPostureStatusMessage;
+    TextView tvPostureStatusMessage, tvCurrentPosture;
     Button bStart, bHome;
 
     BluetoothAdapter bluetoothAdapter;
@@ -72,14 +74,13 @@ public class PostureActivity extends AppCompatActivity {
     ConnectedThread connectedThread;
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_posture);
 
         tvPostureStatusMessage = (TextView) findViewById(R.id.tvPostureStatusMessage);
+        tvCurrentPosture = (TextView) findViewById(R.id.tvCurrentPosture);
         bStart = (Button) findViewById(R.id.bStart);
         bHome = (Button) findViewById(R.id.bHome);
 
@@ -275,10 +276,11 @@ public class PostureActivity extends AppCompatActivity {
                     int[] sensorVals = new int[8];
                     for(int i = 0; i < 8; i++){
                         sensorVals[i] = (readBuff[2*i]&0xFF) + (readBuff[2*i+1]&0xFF)*256;
-                        System.out.println(String.valueOf(i) + "th number: " + String.valueOf(sensorVals[i]));
+                        System.out.println(i + "th number: " + sensorVals[i]);
                     }
-                    //String readings = new String(readBuff, 0, msg.arg1);
-                    //Log.d(TAG, readings);
+                    int prediction = pmmlUtil.predict(evaluator, sensorVals);
+                    Log.d(TAG, "Prediction: " + postures[prediction]);
+                    tvCurrentPosture.setText(postures[prediction]);
                     break;
             }
 

@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-// TODO: Add bluetooth connection stuff
+// TODO: Add bluetooth connection stuff (copy from posture activity?)
 public class CalibrationActivity extends AppCompatActivity {
     private static final String TAG = "CalibrationActivity";
 
