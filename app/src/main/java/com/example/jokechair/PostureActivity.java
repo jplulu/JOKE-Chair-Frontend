@@ -146,29 +146,38 @@ public class PostureActivity extends AppCompatActivity {
                 userLocalStore.getLoggedInUser().getUid(),
                 false);
 
-        mQueue = Volley.newRequestQueue(getApplicationContext());
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        String filename = "predictmodel" + userLocalStore.getLoggedInUser().getUid() + ".json";
-                        pmmlUtil.createModelFile(getApplicationContext(), filename, response.toString());
-                        System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), filename));
-                        InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), filename);
-                        try {
-                            evaluator = pmmlUtil.createEvaluator(inputStream);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+        String fileName = "predictmodel" + userLocalStore.getLoggedInUser().getUid() + ".json";
+        if (!pmmlUtil.isModelPresent(getApplicationContext(), fileName)) {
+            mQueue = Volley.newRequestQueue(getApplicationContext());
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            String filename = "predictmodel" + userLocalStore.getLoggedInUser().getUid() + ".json";
+                            pmmlUtil.createModelFile(getApplicationContext(), filename, response.toString());
+                            System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), filename));
+                            InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), filename);
+                            try {
+                                evaluator = pmmlUtil.createEvaluator(inputStream);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-//                    System.out.println("error");
-                error.printStackTrace();
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e(TAG, String.valueOf(error));
+                }
+            });
+            mQueue.add(request);
+        } else {
+            try {
+                evaluator = pmmlUtil.createEvaluator(pmmlUtil.readModelFile(getApplicationContext(), fileName));
+            } catch (IOException e) {
+                Log.e(TAG, String.valueOf(e));
             }
-        });
-        mQueue.add(request);
+        }
+
     }
 
     @Override

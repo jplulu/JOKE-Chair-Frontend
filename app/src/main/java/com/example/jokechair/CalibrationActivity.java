@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.util.Set;
 import java.util.UUID;
 
-// TODO: Add bluetooth connection stuff (copy from posture activity?)
+
 public class CalibrationActivity extends AppCompatActivity {
     private static final String TAG = "CalibrationActivity";
     private static final UUID MY_UUID = UUID.fromString("0001101-0000-1000-8000-00805F9B34FB");
@@ -76,10 +76,6 @@ public class CalibrationActivity extends AppCompatActivity {
         bStartCalibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                bStartCalibration.setVisibility(View.GONE);
-                bStartCollection.setVisibility(View.VISIBLE);
-                tvCalibPosture.setText(postures[counter]);
-
                 if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
                     findDevice();
                     if (targetDeviceAddress != null) {
@@ -160,6 +156,7 @@ public class CalibrationActivity extends AppCompatActivity {
                 }
                 if (counter == postures.length - 1) {
                     // TODO: send all collected data to the backend
+                    connectedThread.cancel();
                 }
             }
         };
@@ -206,11 +203,6 @@ public class CalibrationActivity extends AppCompatActivity {
                 if (this.targetDeviceAddress != null) {
                     break;
                 }
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
             }
             this.bluetoothAdapter.cancelDiscovery();
         }
@@ -233,13 +225,16 @@ public class CalibrationActivity extends AppCompatActivity {
                     break;
                 case STATE_CONNECTED:
                     //tvPostureStatusMessage.setText("Device connected");
+                    bStartCalibration.setVisibility(View.GONE);
+                    bStartCollection.setVisibility(View.VISIBLE);
+                    tvCalibPosture.setText(postures[counter]);
                     break;
                 case STATE_CONNECTION_FAILED:
                     //tvPostureStatusMessage.setText("Connection Failed");
                     break;
                 case STATE_MESSAGE_RECEIVE:
                     //tvPostureStatusMessage.setText("Receiving data");
-                    // TODO: Add proper format for collected data
+                    // TODO: Add proper formatting for collected data
                     if (collect) {
                         byte[] readBuff = (byte[]) msg.obj;
                         int[] sensorVals = new int[8];
@@ -336,7 +331,7 @@ public class CalibrationActivity extends AppCompatActivity {
                     break;
                 }
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
