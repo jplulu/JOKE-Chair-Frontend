@@ -153,7 +153,6 @@ public class PostureActivity extends AppCompatActivity {
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            String filename = "predictmodel" + userLocalStore.getLoggedInUser().getUid() + ".json";
                             pmmlUtil.createModelFile(getApplicationContext(), filename, response.toString());
                             System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), filename));
                             InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), filename);
@@ -177,7 +176,6 @@ public class PostureActivity extends AppCompatActivity {
                 Log.e(TAG, String.valueOf(e));
             }
         }
-
     }
 
     @Override
