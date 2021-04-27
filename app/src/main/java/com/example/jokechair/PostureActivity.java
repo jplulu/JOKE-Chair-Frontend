@@ -141,7 +141,6 @@ public class PostureActivity extends AppCompatActivity {
         
         mQueue = Volley.newRequestQueue(getApplicationContext());
 
-        //TODO use stored UID
         String url = String.format("http://10.0.2.2:5000/usermodel/generate?uid=%s&gen=%s",
                 userLocalStore.getLoggedInUser().getUid(),
                 false);
@@ -153,9 +152,9 @@ public class PostureActivity extends AppCompatActivity {
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            pmmlUtil.createModelFile(getApplicationContext(), filename, response.toString());
-                            System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), filename));
-                            InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), filename);
+                            pmmlUtil.createModelFile(getApplicationContext(), fileName, response.toString());
+                            System.out.println(pmmlUtil.isModelPresent(getApplicationContext(), fileName));
+                            InputStream inputStream = pmmlUtil.readModelFile(getApplicationContext(), fileName);
                             try {
                                 evaluator = pmmlUtil.createEvaluator(inputStream);
                             } catch (IOException e) {

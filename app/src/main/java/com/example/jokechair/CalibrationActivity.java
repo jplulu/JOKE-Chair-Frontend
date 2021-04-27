@@ -20,10 +20,24 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.JsonRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.sql.Timestamp;
 
 
 public class CalibrationActivity extends AppCompatActivity {
@@ -54,6 +68,11 @@ public class CalibrationActivity extends AppCompatActivity {
 
     private int counter = 0;
     private boolean collect = false;
+    private List<int[]> collected_sensor_data = new ArrayList<>();
+    private List<Timestamp> timestamps = new ArrayList<>();
+    private JSONObject calib_data = new JSONObject();
+    private List<String> posture_list = new ArrayList<>();
+    private RequestQueue mQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,6 +176,32 @@ public class CalibrationActivity extends AppCompatActivity {
                 if (counter == postures.length - 1) {
                     // TODO: send all collected data to the backend
                     connectedThread.cancel();
+
+
+                    String url = "http://10.0.2.2:5000/add_traindata/";
+                    JSONObject jsonBody = new JSONObject();
+                    try {
+                        jsonBody.put("uid", MY_UUID);
+                        jsonBody.put("timestamp", timestamps);
+                        jsonBody.put("sensors", collected_sensor_data);
+                        jsonBody.put("classification", posture_list);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    mQueue = Volley.newRequestQueue(getApplicationContext());
+                    JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, jsonBody,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    System.out.println("SUCCESS");
+                                }
+                            }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.e(TAG, String.valueOf(error));
+                        }
+                    });
+                    mQueue.add(request);
                 }
             }
         };
@@ -243,6 +288,9 @@ public class CalibrationActivity extends AppCompatActivity {
                             System.out.println(i + "th number: " + sensorVals[i]);
                         }
                         String label = postures[counter];
+                        collected_sensor_data.add(sensorVals);
+                        timestamps.add(new Timestamp(System.currentTimeMillis()));
+                        posture_list.add(label);
                     }
                     break;
             }
