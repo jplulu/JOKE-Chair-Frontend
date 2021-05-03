@@ -10,22 +10,42 @@
         android:id="@+id/tvCurrentPosture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="140dp"
         android:text="Posture"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 
     <TextView
         android:id="@+id/tvPostureStatusMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Status Message for Debug"
+        android:textColor="#F44336"
         app:layout_constraintBottom_toTopOf="@id/bStart"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvCurrentPosture"
-        android:textColor="#F44336"/>
+        app:layout_constraintVertical_bias="0.959" />
+
+    <ImageView
+        android:id="@+id/calibrationImage"
+        android:layout_width="410dp"
+        android:layout_height="276dp"
+        android:layout_weight="1.04"
+        android:adjustViewBounds="true"
+        android:background="#66FFFFFF"
+        android:maxWidth="47dip"
+        android:maxHeight="91dip"
+        android:padding="10dip"
+        android:src="@drawable/placeholder1"
+        app:layout_constraintBottom_toTopOf="@+id/bStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvCurrentPosture"
+        app:layout_constraintVertical_bias="0.366" />
 
     <Button
         android:id="@+id/bStart"
@@ -34,8 +54,10 @@
         android:text="Start"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvCurrentPosture" />
+        app:layout_constraintTop_toBottomOf="@+id/tvCurrentPosture"
+        app:layout_constraintVertical_bias="0.733" />
 
     <Button
         android:id="@+id/bHome"
@@ -46,5 +68,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bStart" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

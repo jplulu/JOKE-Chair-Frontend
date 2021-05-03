@@ -16,6 +16,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,6 +58,7 @@ public class CalibrationActivity extends AppCompatActivity {
     private TextView tvCalibPosture;
     private Button bStartCalibration, bStartCollection;
     private ProgressBar pbCountdown;
+    private ImageView calibrationImage;
 
     private PmmlUtil pmmlUtil;
     private CountDownTimer countDownTimer;
@@ -86,6 +88,8 @@ public class CalibrationActivity extends AppCompatActivity {
         bStartCalibration = (Button) findViewById(R.id.bStartCalibration);
         bStartCollection = (Button) findViewById(R.id.bStartCollection);
 
+        calibrationImage = (ImageView) findViewById(R.id.calibrationImage);
+
         countDownTimer = null;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         targetDeviceAddress = null;
@@ -95,21 +99,23 @@ public class CalibrationActivity extends AppCompatActivity {
         bStartCalibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
-                    findDevice();
-                    if (targetDeviceAddress != null) {
-                        Message message = Message.obtain();
-                        message.what = STATE_CONNECTING;
-                        btHandler.sendMessage(message);
-
-                        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(targetDeviceAddress);
-                        connect(device);
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Could not find device to connect to", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
-                }
+//                if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+//                    findDevice();
+//                    if (targetDeviceAddress != null) {
+//                        Message message = Message.obtain();
+//                        message.what = STATE_CONNECTING;
+//                        btHandler.sendMessage(message);
+//
+//                        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(targetDeviceAddress);
+//                        connect(device);
+//                    } else {
+//                        Toast.makeText(getApplicationContext(), "Could not find device to connect to", Toast.LENGTH_LONG).show();
+//                    }
+//                } else {
+//                    Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
+//                }
+                bStartCollection.setVisibility(View.VISIBLE);
+                bStartCalibration.setVisibility(View.GONE);
             }
         });
 
@@ -172,6 +178,26 @@ public class CalibrationActivity extends AppCompatActivity {
                     tvCalibPosture.setText(postures[counter]);
                     pbCountdown.setVisibility(View.GONE);
                     bStartCollection.setVisibility(View.VISIBLE);
+                    switch (counter) {
+                        case 1:
+                            calibrationImage.setImageResource(R.drawable.lean_forward);
+                            break;
+                        case 2:
+                            calibrationImage.setImageResource(R.drawable.lean_left);
+                            break;
+                        case 3:
+                            calibrationImage.setImageResource(R.drawable.lean_right);
+                            break;
+                        case 4:
+                            calibrationImage.setImageResource(R.drawable.left_leg_cross);
+                            break;
+                        case 5:
+                            calibrationImage.setImageResource(R.drawable.right_leg_cross);
+                            break;
+                        case 6:
+                            calibrationImage.setImageResource(R.drawable.slouch);
+                            break;
+                    }
                 }
                 if (counter == postures.length - 1) {
                     // TODO: send all collected data to the backend

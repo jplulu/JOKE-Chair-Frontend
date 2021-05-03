@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,6 +68,7 @@ public class PostureActivity extends AppCompatActivity {
 
     TextView tvPostureStatusMessage, tvCurrentPosture;
     Button bStart, bHome;
+    ImageView postureImage;
 
     BluetoothAdapter bluetoothAdapter;
     String targetDeviceAddress;
@@ -83,6 +85,7 @@ public class PostureActivity extends AppCompatActivity {
         tvCurrentPosture = (TextView) findViewById(R.id.tvCurrentPosture);
         bStart = (Button) findViewById(R.id.bStart);
         bHome = (Button) findViewById(R.id.bHome);
+        postureImage = (ImageView) findViewById(R.id.postureImage);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         targetDeviceAddress = null;
@@ -283,6 +286,28 @@ public class PostureActivity extends AppCompatActivity {
                     int prediction = pmmlUtil.predict(evaluator, sensorVals);
                     Log.d(TAG, "Prediction: " + postures[prediction]);
                     tvCurrentPosture.setText(postures[prediction]);
+                    switch (prediction) {
+                        case 0:
+                            postureImage.setImageResource(R.drawable.placeholder1);
+                        case 1:
+                            postureImage.setImageResource(R.drawable.lean_forward);
+                            break;
+                        case 2:
+                            postureImage.setImageResource(R.drawable.lean_left);
+                            break;
+                        case 3:
+                            postureImage.setImageResource(R.drawable.lean_right);
+                            break;
+                        case 4:
+                            postureImage.setImageResource(R.drawable.left_leg_cross);
+                            break;
+                        case 5:
+                            postureImage.setImageResource(R.drawable.right_leg_cross);
+                            break;
+                        case 6:
+                            postureImage.setImageResource(R.drawable.slouch);
+                            break;
+                    }
                     break;
             }
 
