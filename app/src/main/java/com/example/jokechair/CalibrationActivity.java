@@ -99,23 +99,23 @@ public class CalibrationActivity extends AppCompatActivity {
         bStartCalibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
-//                    findDevice();
-//                    if (targetDeviceAddress != null) {
-//                        Message message = Message.obtain();
-//                        message.what = STATE_CONNECTING;
-//                        btHandler.sendMessage(message);
-//
-//                        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(targetDeviceAddress);
-//                        connect(device);
-//                    } else {
-//                        Toast.makeText(getApplicationContext(), "Could not find device to connect to", Toast.LENGTH_LONG).show();
-//                    }
-//                } else {
-//                    Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
-//                }
-                bStartCollection.setVisibility(View.VISIBLE);
-                bStartCalibration.setVisibility(View.GONE);
+                if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+                    findDevice();
+                    if (targetDeviceAddress != null) {
+                        Message message = Message.obtain();
+                        message.what = STATE_CONNECTING;
+                        btHandler.sendMessage(message);
+
+                        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(targetDeviceAddress);
+                        connect(device);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Could not find device to connect to", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
+                }
+//                bStartCollection.setVisibility(View.VISIBLE);
+//                bStartCalibration.setVisibility(View.GONE);
             }
         });
 
