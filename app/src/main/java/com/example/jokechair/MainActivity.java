@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
 
     private UserLocalStore userLocalStore;
-    private Button bLogout, bPosturePage, bCalibrationPage;
+    private Button bLogout, bPosturePage, bCalibrationPage, bHistoryPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +25,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bPosturePage = (Button) findViewById(R.id.bPosturePage);
         bCalibrationPage = (Button) findViewById(R.id.bCalibrationPage);
         bLogout = (Button) findViewById(R.id.bLogout);
+        bHistoryPage = (Button) findViewById(R.id.bHistoryPage);
 
         bLogout.setOnClickListener(this);
         bPosturePage.setOnClickListener(this);
         bCalibrationPage.setOnClickListener(this);
+        bHistoryPage.setOnClickListener(this);
 
         userLocalStore = new UserLocalStore(this);
     }
@@ -60,6 +62,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.bCalibrationPage:
                 startActivity(new Intent(this, CalibrationActivity.class));
+                break;
+            case R.id.bHistoryPage:
+                startActivity(new Intent(this, HistoryActivity.class));
                 break;
         }
     }
