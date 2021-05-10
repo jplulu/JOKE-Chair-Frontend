@@ -17,6 +17,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import java.util.Map;
 public class PmmlUtil {
     private static final String TAG = "PmmlUtil";
 
+    private final String[] postures = {"lean_forward", "lean_left", "lean_right", "left_leg_cross", "proper", "right_leg_cross", "slouch"};
     public void createModelFile(Context context, String fileName, String jsonString) {
         try {
             FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
@@ -61,12 +64,12 @@ public class PmmlUtil {
         return evaluator;
     }
 
-    public int predict(Evaluator evaluator, int[] inputRecord) {
+    public String predict(Evaluator evaluator, int[] inputRecord) {
         List<? extends InputField> inputFields = evaluator.getInputFields();
 
         List<? extends TargetField> targetFields = evaluator.getTargetFields();
 
-        normalizeInput(inputRecord);
+//        normalizeInput(inputRecord);
 
         Map<FieldName, FieldValue> arguments = new LinkedHashMap<>();
 
@@ -83,7 +86,8 @@ public class PmmlUtil {
         Object targetValue = results.get(targetFields.get(0).getName());
         Computable computable = (Computable) targetValue;
         targetValue = computable.getResult();
-        return (int) targetValue;
+        System.out.println(targetValue);
+        return targetValue.toString();
     }
 
     public static void normalizeInput(int[] inputRecord) {

@@ -64,41 +64,41 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     // TODO: Add authentication with server and retrieve user data
     private void processLogin() {
-//        if (validateData()) {
-//            mQueue = Volley.newRequestQueue(getApplicationContext());
-//            String url = String.format("http://10.0.2.2:5000/user/get_userlogin?email=%s&password=%s",
-//                    etUsername.getText(),
-//                    etPassword.getText());
-//            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-//                    new Response.Listener<JSONObject>() {
-//                        @Override
-//                        public void onResponse(JSONObject response) {
-//                            User user;
-//                            user = null;
-//                            try {
-//                                user = new User(response.getString("email"),
-//                                        response.getString("password"),
-//                                        response.getInt("uid"));
-//                                if (user != null) {
-//                                    userLocalStore.storeUserData(user);
-//                                    userLocalStore.setUserLoggedIn(true);
-//                                    startActivity(new Intent(getApplicationContext(),
-//                                            MainActivity.class));
-//                                }
-//                            } catch (JSONException e) {
-//                                e.printStackTrace();
-//                            }
-//
-//                        }
-//                    }, new Response.ErrorListener() {
-//                @Override
-//                public void onErrorResponse(VolleyError error) {
-////                    System.out.println("error");
-//                    error.printStackTrace();
-//                }
-//            });
-//            mQueue.add(request);
-//        }
+        if (validateData()) {
+            mQueue = Volley.newRequestQueue(getApplicationContext());
+            String url = String.format("http://localhost:3333/user/get_userlogin?email=%s&password=%s",
+                    etUsername.getText(),
+                    etPassword.getText());
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            User user;
+                            user = null;
+                            try {
+                                user = new User(response.getString("email"),
+                                        response.getString("password"),
+                                        response.getInt("uid"));
+                                System.out.println(response.getString("password"));
+                                if (user != null) {
+                                    userLocalStore.storeUserData(user);
+                                    userLocalStore.setUserLoggedIn(true);
+                                    startActivity(new Intent(getApplicationContext(),
+                                            MainActivity.class));
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    error.printStackTrace();
+                }
+            });
+            mQueue.add(request);
+        }
         if (validateData()) {
             User user = new User(null, null, 1);
             userLocalStore.storeUserData(user);
