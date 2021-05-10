@@ -50,6 +50,7 @@ public class CalibrationActivity extends AppCompatActivity {
 
     private final String[] postures = {"proper", "lean_forward", "lean_left", "lean_right", "left_leg_cross", "right_leg_cross", "slouch"};
 //    private final String[] postures = {"proper"};
+
     static final int STATE_LISTENING = 1;
     static final int STATE_CONNECTING = 2;
     static final int STATE_CONNECTED = 3;
@@ -70,6 +71,7 @@ public class CalibrationActivity extends AppCompatActivity {
 
     private int counter = 0;
     private boolean collect = false;
+
     private int[] baseline = new int[8];
     private int baseline_rows = 0;
     private List<Integer> uids = new ArrayList<>();
@@ -96,7 +98,6 @@ public class CalibrationActivity extends AppCompatActivity {
         targetDeviceAddress = null;
 
         pmmlUtil = new PmmlUtil();
-
 
         bStartCalibration.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -182,6 +183,7 @@ public class CalibrationActivity extends AppCompatActivity {
                     pbCountdown.setVisibility(View.GONE);
                     bStartCollection.setVisibility(View.VISIBLE);
                 }
+
                 if (counter == postures.length) {
                     // TODO: send all collected data to the backend
                     connectedThread.cancel();
