@@ -16,6 +16,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,7 +49,7 @@ public class CalibrationActivity extends AppCompatActivity {
     private static final String TARGET_DEVICE_NAME = "ESP32test";
     private static final int REQUEST_ENABLE_BT = 1;
 
-    private final String[] postures = {"proper", "lean_forward", "lean_left", "lean_right", "left_leg_cross", "right_leg_cross", "slouch"};
+    private final String[] postures = {"lean_forward", "lean_left", "lean_right", "left_leg_cross", "proper", "right_leg_cross", "slouch"};
 //    private final String[] postures = {"proper"};
 
     static final int STATE_LISTENING = 1;
@@ -60,6 +61,7 @@ public class CalibrationActivity extends AppCompatActivity {
     private TextView tvCalibPosture;
     private Button bStartCalibration, bStartCollection;
     private ProgressBar pbCountdown;
+    private ImageView calibrationImage;
 
     private PmmlUtil pmmlUtil;
     private CountDownTimer countDownTimer;
@@ -71,6 +73,11 @@ public class CalibrationActivity extends AppCompatActivity {
 
     private int counter = 0;
     private boolean collect = false;
+    private List<int[]> collected_sensor_data = new ArrayList<>();
+    private List<Timestamp> timestamps = new ArrayList<>();
+    private JSONObject calib_data = new JSONObject();
+    private List<String> posture_list = new ArrayList<>();
+    private RequestQueue mQueue;
 
     private int[] baseline = new int[8];
     private int baseline_rows = 0;
@@ -92,6 +99,8 @@ public class CalibrationActivity extends AppCompatActivity {
 
         bStartCalibration = (Button) findViewById(R.id.bStartCalibration);
         bStartCollection = (Button) findViewById(R.id.bStartCollection);
+
+        calibrationImage = (ImageView) findViewById(R.id.calibrationImage);
 
         countDownTimer = null;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -120,6 +129,8 @@ public class CalibrationActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
                 }
+//                bStartCollection.setVisibility(View.VISIBLE);
+//                bStartCalibration.setVisibility(View.GONE);
             }
         });
 
@@ -182,12 +193,31 @@ public class CalibrationActivity extends AppCompatActivity {
                     tvCalibPosture.setText(postures[counter]);
                     pbCountdown.setVisibility(View.GONE);
                     bStartCollection.setVisibility(View.VISIBLE);
+                    switch (counter) {
+                        case 1:
+                            calibrationImage.setImageResource(R.drawable.lean_forward);
+                            break;
+                        case 2:
+                            calibrationImage.setImageResource(R.drawable.lean_left);
+                            break;
+                        case 3:
+                            calibrationImage.setImageResource(R.drawable.lean_right);
+                            break;
+                        case 4:
+                            calibrationImage.setImageResource(R.drawable.left_leg_cross);
+                            break;
+                        case 5:
+                            calibrationImage.setImageResource(R.drawable.right_leg_cross);
+                            break;
+                        case 6:
+                            calibrationImage.setImageResource(R.drawable.slouch);
+                            break;
+                    }
                 }
 
                 if (counter == postures.length) {
                     // TODO: send all collected data to the backend
                     connectedThread.cancel();
-
 
                     String url = "http://localhost:3333/user/add_traindata";
                     JSONObject jsonBody = new JSONObject();
